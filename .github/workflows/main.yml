@@ -1,4 +1,4 @@
-name: VPS OptiTomexOS Corregido
+name: VPS OptiTomexOS Windows 10
 
 on:
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
             -p 8006:8006 \
             -p 3389:3389/tcp \
             -p 3389:3389/udp \
-            -e RAM_SIZE="16G" \
+            -e RAM_SIZE="14G" \
             -e CPU_CORES="4" \
             -e DISK_SIZE="80G" \
             -e VERSION="https://archive.org/download/tomex-os-v-2.2/OptiTomexOS%20V2.6.iso" \
