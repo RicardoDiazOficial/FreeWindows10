@@ -1,0 +1,62 @@
+name: VPS OptiTomexOS Corregido
+
+on:
+  workflow_dispatch:
+
+jobs:
+  windows-opti:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    
+    steps:
+      - name: "1. Preparar KVM e Inyectar Scripts (Tailscale + RDP + Audio + Touch)"
+        run: |
+          sudo apt-get update
+          sudo chown $USER /dev/kvm
+          
+          mkdir -p /tmp/custom
+          
+          cat << 'EOF' > /tmp/custom/install.bat
+          @echo off
+          echo Forzando Servicios de RDP...
+          reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+          netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
+          sc config TermService start= auto
+          net start TermService
+          
+          echo Forzando Servicio de Audio para RDP...
+          sc config Audiosrv start= auto
+          net start Audiosrv
+          
+          echo Instalando Tailscale...
+          curl.exe -L -o C:\tailscale-setup.exe https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe
+          C:\tailscale-setup.exe /quiet
+          EOF
+
+      - name: "2. Descargar y Desplegar Windows"
+        run: |
+          docker pull dockurr/windows:latest
+          
+          docker run -d \
+            --name=windows \
+            --device=/dev/kvm \
+            --cap-add NET_ADMIN \
+            -p 8006:8006 \
+            -p 3389:3389/tcp \
+            -p 3389:3389/udp \
+            -e RAM_SIZE="16G" \
+            -e CPU_CORES="4" \
+            -e DISK_SIZE="80G" \
+            -e VERSION="https://archive.org/download/tomex-os-v-2.2/OptiTomexOS%20V2.6.iso" \
+            -e ARGUMENTS="-netdev user,id=net1 -device e1000,netdev=net1 -device intel-hda -device hda-micro -device virtio-multitouch-pci -device qemu-xhci -device usb-wacom-tablet" \
+            -e USERNAME="root" \
+            -e PASSWORD="runner*pass2026" \
+            -v /tmp/custom:/custom \
+            dockurr/windows
+            
+          echo "Esperando a que el contenedor inicie..."
+          sleep 20
+
+      - name: "3. Crear Túnel de Acceso Web (Cloudflare)"
+        run: |
+          docker run --rm --net=host cloudflare/cloudflared:latest tunnel --url http://localhost:8006
