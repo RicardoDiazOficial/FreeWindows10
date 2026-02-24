@@ -1,4 +1,4 @@
-name: VPS OptiTomexOS Windows 10
+name: VPS OptiTomexOS Corregido
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 360
     
     steps:
-      - name: "1. Preparar KVM e Inyectar Scripts (Tailscale + RDP + Audio + Touch)"
+      - name: "1. Preparar KVM e Inyectar Scripts (Tailscale + RDP + Audio)"
         run: |
           sudo apt-get update
           sudo chown $USER /dev/kvm
@@ -44,11 +44,11 @@ jobs:
             -p 8006:8006 \
             -p 3389:3389/tcp \
             -p 3389:3389/udp \
-            -e RAM_SIZE="14G" \
+            -e RAM_SIZE="16G" \
             -e CPU_CORES="4" \
             -e DISK_SIZE="80G" \
             -e VERSION="https://archive.org/download/tomex-os-v-2.2/OptiTomexOS%20V2.6.iso" \
-            -e ARGUMENTS="-netdev user,id=net1 -device e1000,netdev=net1 -device intel-hda -device hda-micro -device virtio-multitouch-pci -device qemu-xhci -device usb-wacom-tablet" \
+            -e ARGUMENTS="-netdev user,id=net1 -device e1000,netdev=net1 -device intel-hda -device hda-micro" \
             -e USERNAME="root" \
             -e PASSWORD="runner*pass2026" \
             -v /tmp/custom:/custom \
