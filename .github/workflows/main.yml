@@ -18,17 +18,17 @@ jobs:
           
           cat << 'EOF' > /tmp/custom/install.bat
           @echo off
-          echo Forzando Servicios de RDP...
+          echo Habilitando y Forzando RDP...
           reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
           netsh advfirewall firewall set rule group="remote desktop" new enable=Yes
           sc config TermService start= auto
           net start TermService
           
-          echo Forzando Servicio de Audio para RDP...
+          echo Encendiendo el Audio de Windows...
           sc config Audiosrv start= auto
           net start Audiosrv
           
-          echo Instalando Tailscale...
+          echo Descargando e instalando Tailscale...
           curl.exe -L -o C:\tailscale-setup.exe https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe
           C:\tailscale-setup.exe /quiet
           EOF
@@ -48,7 +48,7 @@ jobs:
             -e CPU_CORES="4" \
             -e DISK_SIZE="80G" \
             -e VERSION="https://archive.org/download/tomex-os-v-2.2/OptiTomexOS%20V2.6.iso" \
-            -e ARGUMENTS="-netdev user,id=net1 -device e1000,netdev=net1 -device intel-hda -device hda-micro" \
+            -e ARGUMENTS="-netdev user,id=net1 -device e1000,netdev=net1" \
             -e USERNAME="root" \
             -e PASSWORD="runner*pass2026" \
             -v /tmp/custom:/custom \
